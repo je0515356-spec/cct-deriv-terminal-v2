@@ -1,7 +1,8 @@
 export type Market = {symbol:string;display_name:string;market_display_name?:string;submarket_display_name?:string;exchange_is_open?:number};
 export type Candle = {time:number;open:number;high:number;low:number;close:number};
 const appId = import.meta.env.VITE_DERIV_APP_ID || '1089';
-const endpoint = `wss://ws.derivws.com/websockets/v3?app_id=${encodeURIComponent(appId)}`;
+const baseUrl = (import.meta.env.VITE_DERIV_WS_URL || 'wss://ws.derivws.com/websockets/v3').trim();
+const endpoint = `${baseUrl}${baseUrl.includes('?') ? '&' : '?'}app_id=${encodeURIComponent(appId)}`;
 type Pending = {resolve:(v:any)=>void;reject:(e:Error)=>void;timeout:ReturnType<typeof setTimeout>};
 export class DerivFeed {
   private ws:WebSocket|null=null;
@@ -28,8 +29,8 @@ export class DerivFeed {
       if(m.subscription?.id)this.subs.add(m.subscription.id);
       this.listeners.forEach(cb=>cb(m));
     };
-    ws.onerror=()=>this.status('Erreur réseau');
-    ws.onclose=()=>{if(this.ws!==ws)return;this.status('Déconnecté');if(this.pingTimer)clearInterval(this.pingTimer);this.pending.forEach(p=>{clearTimeout(p.timeout);p.reject(new Error('Connexion interrompue'))});this.pending.clear();this.subs.clear();this.ws=null;if(!this.stopped){const delay=Math.min(30000,1000*2**Math.min(this.reconnectCount++,5));this.reconnectTimer=setTimeout(()=>this.connect(),delay)}};
+    ws.onerror=()=>this.status('WebSocket inaccessible — vérifier App ID, URL et réseau');
+    ws.onclose=(ev)=>{if(this.ws!==ws)return;this.status(`Déconnecté (code ${ev.code}${ev.reason ? ': '+ev.reason : ''})`);if(this.pingTimer)clearInterval(this.pingTimer);this.pending.forEach(p=>{clearTimeout(p.timeout);p.reject(new Error('Connexion interrompue'))});this.pending.clear();this.subs.clear();this.ws=null;if(!this.stopped){const delay=Math.min(30000,1000*2**Math.min(this.reconnectCount++,5));this.reconnectTimer=setTimeout(()=>this.connect(),delay)}};
   }
   async ready(){if(this.ws?.readyState===WebSocket.OPEN)return;this.connect();await new Promise<void>((resolve,reject)=>{const started=Date.now();const timer=setInterval(()=>{if(this.ws?.readyState===WebSocket.OPEN){clearInterval(timer);resolve()}else if(Date.now()-started>12000){clearInterval(timer);reject(new Error('Délai de connexion dépassé'))}},100)})}
   async request<T=any>(payload:Record<string,unknown>):Promise<T>{await this.ready();const id=this.reqId++;return new Promise((resolve,reject)=>{const timeout=setTimeout(()=>{this.pending.delete(id);reject(new Error('Réponse API trop lente'))},15000);this.pending.set(id,{resolve,reject,timeout});this.ws!.send(JSON.stringify({...payload,req_id:id}))})}
