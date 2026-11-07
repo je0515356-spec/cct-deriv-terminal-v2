@@ -39,6 +39,7 @@
 **Note** : les connexions WebSocket se font directement depuis le navigateur du membre. Les quotas et conditions Deriv restent applicables. Le plan gratuit Cloudflare/Supabase peut changer. La connexion API peut être soumise à des exigences de domaine, d'app ID ou d'autorisation. Aucun trading réel n'est possible dans ce prototype.
 
 ## Sécurité et limites
+Mise à jour du terminal — API publique Deriv
 - Pas de collecte d'identifiants Deriv.
 - Pas d'ordres réels ni de simulations présentées comme exécutées.
 - Supabase RLS isole les favoris par membre.
