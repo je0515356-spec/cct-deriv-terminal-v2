@@ -49,7 +49,7 @@ const features = [
   },
   {
     icon: MousePointer2,
-    title: 'Outils de dessin',
+    title: 'Replay historique gratuit',
     desc: 'Sélectionnez, déplacez et ajustez vos tracés sur le graphique.'
   }
 ];
@@ -172,12 +172,12 @@ export default function Landing({ onEnter }: LandingProps) {
             <div className="cct-home-trust">
               <span>
                 <CheckCircle2 size={15} />
-                Graphiques publics
+                Données Deriv réelles
               </span>
 
               <span>
                 <CheckCircle2 size={15} />
-                Outils de dessin
+                Replay historique gratuit
               </span>
 
               <span>
@@ -194,7 +194,7 @@ export default function Landing({ onEnter }: LandingProps) {
             <div className="cct-home-preview-bar">
               <span className="cct-home-dots">● ● ●</span>
               <span>CCT · ANALYSE GRAPHIQUE</span>
-              <span>DEMO VISUELLE</span>
+              <span>ILLUSTRATION</span>
             </div>
 
             <svg
