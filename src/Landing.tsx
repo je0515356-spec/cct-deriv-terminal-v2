@@ -1,5 +1,5 @@
-import React from 'react';
-import {ArrowRight,ChartCandlestick,ChartNoAxesCombined,MoveUpRight,ShieldCheck,Layers3,Camera,Bookmark,MousePointer2,Mail,MessageCircle,Facebook,CheckCircle2,BookOpen,LockKeyhole} from 'lucide-react';
+
+import {ArrowRight,ChartCandlestick,ChartNoAxesCombined,MoveUpRight,ShieldCheck,Layers3,Camera,Bookmark,MousePointer2 MessageCircle,Facebook,CheckCircle2,BookOpen,LockKeyhole} from 'lucide-react';
 import './landing.css';
 const FACEBOOK='https://www.facebook.com/loza.nama.376/';
 const WHATSAPP='https://wa.me/261382817100';
