@@ -1,3 +1,67 @@
+import React,{useEffect,useMemo,useRef,useState} from 'react';
+import{createRoot}from'react-dom/client';
+import{createChart,CandlestickSeries,LineSeries,ColorType,type IChartApi,type ISeriesApi,type UTCTimestamp,type Logical}from'lightweight-charts';
+import{Activity,Bookmark,ChartCandlestick,Cloud,CloudOff,LogIn,LogOut,Search,Settings2,Star,Trash2,TrendingUp,Wifi,MousePointer2,Minus,Square,GitBranch,Undo2,Download,Camera,Clock3,Type,Copy,Lock,Unlock,Play,Pause,StepForward,RotateCcw,ExternalLink,Maximize2,Minimize2}from'lucide-react';
+import{createClient,type SupabaseClient,type User}from'@supabase/supabase-js';
+import{DerivFeed,type Candle,type Market}from'./deriv';
+import './style.css';
+import Landing from './Landing';
+const feed=new DerivFeed();
+const sbUrl=(import.meta.env.VITE_SUPABASE_URL as string|undefined)?.trim();
+const sbKey=(import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY||import.meta.env.VITE_SUPABASE_ANON_KEY)?.trim() as string|undefined;
+const supabase:SupabaseClient|null=sbUrl&&sbKey?createClient(sbUrl,sbKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,flowType:'pkce'}}):null;
+const GRANULARITIES=[{label:'1m',value:60},{label:'2m',value:120},{label:'3m',value:180},{label:'5m',value:300},{label:'10m',value:600},{label:'15m',value:900},{label:'30m',value:1800},{label:'1h',value:3600},{label:'2h',value:7200},{label:'4h',value:14400},{label:'8h',value:28800},{label:'1j',value:86400}];
+const DEFAULT_SYMBOL='R_100';
+type DrawTool='cursor'|'trend'|'horizontal'|'rectangle'|'fib'|'long'|'short'|'text';
+type Anchor={time:number;price:number};
+type Drawing={id:string;tool:Exclude<DrawTool,'cursor'>;a:Anchor;b:Anchor;color:string;riskPrice?:number;targetPrice?:number;label?:string;locked?:boolean};
+const drawingsKey=(s:string,_g:number)=>`cct-drawings-v2:${s}`;
+// Migrate drawings from all old timeframe-specific keys once per instrument.
+function migrateDrawings(s:string){const target=drawingsKey(s,60);if(localStorage.getItem(target)!==null)return;const merged=new Map<string,Drawing>();for(const g of GRANULARITIES){try{const old=JSON.parse(localStorage.getItem(`cct-drawings-v1:${s}:${g.value}`)||'[]');if(Array.isArray(old))for(const d of old)if(d?.id&&d?.a&&d?.b)merged.set(d.id,d)}catch{}}localStorage.setItem(target,JSON.stringify([...merged.values()]));}
+function readDrawings(s:string,g:number):Drawing[]{try{migrateDrawings(s);const value=JSON.parse(localStorage.getItem(drawingsKey(s,g))||'[]');return Array.isArray(value)?value.filter((d:any)=>d&&d.id&&d.a&&d.b&&['trend','horizontal','rectangle','fib','long','short','text'].includes(d.tool)):[]}catch{return []}}
+
+const localFavorites=()=>{try{return JSON.parse(localStorage.getItem('cct-favorites')||'[]') as string[]}catch{return []}};
+function App({onHome}:{onHome:()=>void}){
+ const [markets,setMarkets]=useState<Market[]>([]),[symbol,setSymbol]=useState(DEFAULT_SYMBOL),[granularity,setGranularity]=useState(60),[candles,setCandles]=useState<Candle[]>([]),[status,setStatus]=useState('Connexion…'),[error,setError]=useState(''),[search,setSearch]=useState(''),[favorites,setFavorites]=useState<string[]>(localFavorites),[favoritesOnly,setFavoritesOnly]=useState(false),[user,setUser]=useState<User|null>(null),[email,setEmail]=useState(''),[showLogin,setShowLogin]=useState(false),[loading,setLoading]=useState(false),[ema,setEma]=useState(false),[sma,setSma]=useState(false),[showSettings,setShowSettings]=useState(false);
+ const [marketGroup,setMarketGroup]=useState('all');
+ const [replay,setReplay]=useState(false),[replayPicking,setReplayPicking]=useState(false),[replayIndex,setReplayIndex]=useState(0),[replayPlaying,setReplayPlaying]=useState(false),[replaySpeed,setReplaySpeed]=useState(1);
+ const replayRef=useRef(false),replayIndexRef=useRef(0),replayCutoffRef=useRef<number|null>(null);
+ const [authReady,setAuthReady]=useState(!supabase),[authEmail,setAuthEmail]=useState(''),[authMessage,setAuthMessage]=useState('');
+ const [chartReady,setChartReady]=useState(false),[journalOpen,setJournalOpen]=useState(()=>window.location.hash==='#journal');
+ const [forexMode]=useState(false),[forexPair,setForexPair]=useState('FX:EURUSD'),[isFullscreen,setIsFullscreen]=useState(false);
+ const chartFrame=useRef<HTMLDivElement>(null);
+ const forexPairs=[['EUR/USD','FX:EURUSD'],['GBP/USD','FX:GBPUSD'],['USD/JPY','FX:USDJPY'],['AUD/USD','FX:AUDUSD'],['USD/CAD','FX:USDCAD'],['USD/CHF','FX:USDCHF'],['EUR/JPY','FX:EURJPY'],['XAU/USD','OANDA:XAUUSD']];
+ async function toggleChartFullscreen(){const el=chartFrame.current;if(!el)return;try{if(!document.fullscreenElement)await el.requestFullscreen();else await document.exitFullscreen()}catch(e){setError('Plein écran indisponible dans ce navigateur.')} }
+ useEffect(()=>{const update=()=>setIsFullscreen(Boolean(document.fullscreenElement));document.addEventListener('fullscreenchange',update);return()=>document.removeEventListener('fullscreenchange',update)},[]);
+
+ const [drawTool,setDrawTool]=useState<DrawTool>('cursor'),[drawings,setDrawings]=useState<Drawing[]>(()=>readDrawings(DEFAULT_SYMBOL,60)),[draft,setDraft]=useState<Drawing|null>(null),[drawingColor,setDrawingColor]=useState('#f6c65b'),[renderVersion,setRenderVersion]=useState(0);
+ const [textInput,setTextInput]=useState('Analyse');
+ const [selectedId,setSelectedId]=useState<string|null>(null),[dragging,setDragging]=useState(false),[now,setNow]=useState(Date.now());
+ const moveRef=useRef<{id:string;start:Anchor;original:Drawing;mode:'move'|'risk'|'target'|'resize'|'start'}|null>(null);
+ useEffect(()=>{const t=setInterval(()=>setNow(Date.now()),1000);return()=>clearInterval(t)},[]);
+ const loadedDrawingsKey=useRef(drawingsKey(DEFAULT_SYMBOL,60));
+ const draftRef=useRef<Drawing|null>(null),drawingsRef=useRef<Drawing[]>(drawings),toolRef=useRef<DrawTool>(drawTool),colorRef=useRef(drawingColor),pointerRef=useRef<number|null>(null);
+ const chartHost=useRef<HTMLDivElement>(null),chart=useRef<IChartApi|null>(null),series=useRef<ISeriesApi<'Candlestick'>|null>(null),emaSeries=useRef<ISeriesApi<'Line'>|null>(null),smaSeries=useRef<ISeriesApi<'Line'>|null>(null),dataRef=useRef<Candle[]>([]),activeSymbol=useRef(symbol),activeGranularity=useRef(granularity),generation=useRef(0);
+ useEffect(()=>{drawingsRef.current=drawings},[drawings]);
+ useEffect(()=>{toolRef.current=drawTool},[drawTool]);
+ useEffect(()=>{colorRef.current=drawingColor},[drawingColor]);
+ useEffect(()=>{loadedDrawingsKey.current=drawingsKey(symbol,granularity);setDrawings(readDrawings(symbol,granularity));draftRef.current=null;setDraft(null);setDrawTool('cursor');setSelectedId(null)},[symbol]);
+ useEffect(()=>{if(loadedDrawingsKey.current===drawingsKey(symbol,granularity))localStorage.setItem(drawingsKey(symbol,granularity),JSON.stringify(drawings))},[drawings,symbol,granularity]);
+ useEffect(()=>{const onKey=(e:KeyboardEvent)=>{if(e.key==='Escape'){draftRef.current=null;setDraft(null);setDrawTool('cursor');setSelectedId(null)}if((e.key==='Delete'||e.key==='Backspace')&&selectedId&&!(e.target instanceof HTMLInputElement)&&!(e.target instanceof HTMLTextAreaElement)){setDrawings(old=>old.filter(d=>d.id!==selectedId));setSelectedId(null)}};window.addEventListener('keydown',onKey);return()=>window.removeEventListener('keydown',onKey)},[selectedId]);
+ const current=markets.find(m=>m.symbol===symbol);
+ const visibleMarkets=useMemo(()=>markets.filter(m=>(marketGroup==='all'||(marketGroup==='volatility'?/volatility|\bR_\d|\b1HZ/i.test(`${m.display_name} ${m.symbol} ${m.market_display_name||''} ${m.submarket_display_name||''}`):marketGroup==='crashboom'?/crash|boom/i.test(`${m.display_name} ${m.symbol}`):true))&&(!favoritesOnly||favorites.includes(m.symbol))&&(`${m.display_name} ${m.symbol} ${m.market_display_name||''}`).toLowerCase().includes(search.toLowerCase())).slice(0,180),[markets,marketGroup,favoritesOnly,favorites,search]);
+ useEffect(()=>{const off=feed.onStatus(setStatus);feed.connect();return()=>{off();feed.stop()}},[]);
+ useEffect(()=>{if(status!=='Connecté')return;let cancelled=false;feed.markets().then(ms=>{if(cancelled)return;setMarkets(ms);if(!ms.some(m=>m.symbol===DEFAULT_SYMBOL)&&ms.length)setSymbol(ms[0].symbol)}).catch(e=>{if(!cancelled)setError(`Liste des marchés : ${e.message}`)});return()=>{cancelled=true}},[status]);
+ useEffect(()=>{if(!supabase){setAuthReady(true);return}let alive=true;supabase.auth.getSession().then(({data,error})=>{if(!alive)return;if(error)console.warn('[CCT] Session:',error.message);setUser(data.session?.user||null);setAuthReady(true)}).catch(()=>{if(alive)setAuthReady(true)});const{data:{subscription}}=supabase.auth.onAuthStateChange((_event,session)=>{if(alive)setUser(session?.user||null)});return()=>{alive=false;subscription.unsubscribe()}},[]);
+ useEffect(()=>{if(!supabase||!user)return;supabase.from('watchlists').select('symbols').eq('user_id',user.id).maybeSingle().then(({data,error})=>{if(error)setError(`Sauvegarde cloud : ${error.message}`);else if(data?.symbols)setFavorites(data.symbols)})},[user]);
+ useEffect(()=>{localStorage.setItem('cct-favorites',JSON.stringify(favorites))},[favorites]);
+ useEffect(()=>{if(!authReady||!chartHost.current)return;const c=createChart(chartHost.current,{layout:{background:{type:ColorType.Solid,color:'#0e1625'},textColor:'#9eafc7',fontFamily:'Inter,system-ui,sans-serif'},grid:{vertLines:{color:'#192638'},horzLines:{color:'#192638'}},rightPriceScale:{borderColor:'#26364c'},timeScale:{borderColor:'#26364c',timeVisible:true,secondsVisible:false},crosshair:{vertLine:{color:'#607b9e'},horzLine:{color:'#607b9e'}},autoSize:true});chart.current=c;series.current=c.addSeries(CandlestickSeries,{upColor:'#20c997',downColor:'#ff6579',wickUpColor:'#20c997',wickDownColor:'#ff6579',borderVisible:false});emaSeries.current=c.addSeries(LineSeries,{color:'#ffc857',lineWidth:2,priceLineVisible:false,lastValueVisible:false});smaSeries.current=c.addSeries(LineSeries,{color:'#66a9ff',lineWidth:2,priceLineVisible:false,lastValueVisible:false});const refresh=()=>setRenderVersion(v=>v+1);c.timeScale().subscribeVisibleLogicalRangeChange(refresh);const observer=new ResizeObserver(()=>{if(chartHost.current){c.applyOptions({width:chartHost.current.clientWidth,height:chartHost.current.clientHeight});refresh()}});observer.observe(chartHost.current);setChartReady(true);return()=>{observer.disconnect();c.timeScale().unsubscribeVisibleLogicalRangeChange(refresh);c.remove();chart.current=null;series.current=null;emaSeries.current=null;smaSeries.current=null;setChartReady(false)}},[authReady]);
+ function average(data:Candle[],period:number,exponential:boolean){const result:{time:UTCTimestamp;value:number}[]=[];let prev=0;let sum=0;for(let i=0;i<data.length;i++){sum+=data[i].close;if(i>=period)sum-=data[i-period].close;if(i===period-1)prev=sum/period;if(i>=period-1){const val=exponential&&i>period-1?data[i].close*(2/(period+1))+prev*(1-2/(period+1)):exponential?prev:sum/period;prev=val;result.push({time:data[i].time as UTCTimestamp,value:val})}}return result}
+ useEffect(()=>{emaSeries.current?.setData(ema?average(candles,20,true):[]);smaSeries.current?.setData(sma?average(candles,50,false):[])},[candles,ema,sma]);
+ function showReplayIndex(index:number,appendStep=false){const all=dataRef.current;if(!all.length)return;const i=Math.max(0,Math.min(index,all.length-1));const previous=replayIndexRef.current;replayIndexRef.current=i;setReplayIndex(i);const visible=all.slice(0,i+1);
+    // During playback, append exactly one candle instead of replacing the whole series.
+    // This avoids the abrupt horizontal jump caused by setData()+scrollToRealTime().
+    if(appendStep&&i===previous+1){const next=all[i];series.current?.update({...next,time:next.time as UTCTimestamp});}
     else {series.current?.setData(visible.map(c=>({...c,time:c.time as UTCTimestamp})));}
     setCandles(visible);
   }
