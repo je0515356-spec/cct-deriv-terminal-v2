@@ -127,3 +127,13 @@
  .chart-wrap{min-height:300px}
  .chart-wrap:fullscreen{min-height:100vh}
 }
+
+/* CCT V8.8.1: reliable drawing hit-area and fullscreen fallback */
+.chart-wrap.cct-expanded{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;min-height:100dvh!important;z-index:100000!important;background:#0e1625!important;display:block!important}
+.chart-wrap.cct-expanded .chart,.chart-wrap.cct-expanded .drawing-overlay,.chart-wrap.cct-expanded .forex-frame{position:absolute!important;inset:0!important;width:100%!important;height:100%!important}
+.chart-wrap.cct-expanded .chart-fullscreen-controls{position:fixed!important;top:12px!important;right:14px!important;z-index:100002!important}
+.chart-fullscreen-controls .btn{background:#17314b!important;border:1px solid #4a718f!important;color:#f3f8ff!important;box-shadow:0 4px 18px #0008!important}
+.drawing-overlay.drawing-active{pointer-events:auto!important}
+.drawing-overlay.drawing-active>rect:first-child{pointer-events:all!important}
+.market-mode-switch{flex-shrink:0}
+@media(max-width:650px){.chart-wrap.cct-expanded{height:100dvh!important}.chart-fullscreen-controls .btn{min-height:40px}}
