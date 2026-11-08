@@ -8,6 +8,7 @@ import './style.css';
 import Landing from './Landing';
 const feed=new DerivFeed();
 const sbUrl=(import.meta.env.VITE_SUPABASE_URL as string|undefined)?.trim();
+console.info('[CCT DEBUG] Supabase URL:', sbUrl);
 const sbKey=(import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY||import.meta.env.VITE_SUPABASE_ANON_KEY)?.trim() as string|undefined;
 const supabase:SupabaseClient|null=sbUrl&&sbKey?createClient(sbUrl,sbKey):null;
 const GRANULARITIES=[{label:'1m',value:60},{label:'2m',value:120},{label:'3m',value:180},{label:'5m',value:300},{label:'10m',value:600},{label:'15m',value:900},{label:'30m',value:1800},{label:'1h',value:3600},{label:'2h',value:7200},{label:'4h',value:14400},{label:'8h',value:28800},{label:'1j',value:86400}];
