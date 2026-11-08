@@ -44,3 +44,12 @@ Mise à jour du terminal — API publique Deriv
 - Pas d'ordres réels ni de simulations présentées comme exécutées.
 - Supabase RLS isole les favoris par membre.
 - Le code doit être testé avec votre app ID et les instruments souhaités avant toute diffusion au groupe.
+
+
+## CCT V8.8 — interface & chart improvements (working preview)
+
+- Added a visible Deriv / Forex mode switch. Forex mode uses the TradingView embedded chart widget; this is an external chart source, not a native Deriv feed.
+- Added chart resize refresh after entering or leaving browser fullscreen.
+- Improved fullscreen chart sizing and transitions.
+- Kept the existing Supabase authentication, watchlists, journal, Deriv WebSocket feed, replay and local drawing persistence.
+- Drawing tools remain limited to the native Deriv chart; they are hidden while using the embedded Forex widget.
