@@ -28,7 +28,7 @@ function App({onHome}:{onHome:()=>void}){
  const replayRef=useRef(false),replayIndexRef=useRef(0),replayCutoffRef=useRef<number|null>(null);
  const [authReady,setAuthReady]=useState(!supabase),[authEmail,setAuthEmail]=useState(''),[authMessage,setAuthMessage]=useState('');
  const [chartReady,setChartReady]=useState(false),[journalOpen,setJournalOpen]=useState(()=>window.location.hash==='#journal');
- const [forexMode,setForexMode]=useState(false),[forexPair,setForexPair]=useState('FX:EURUSD'),[isFullscreen,setIsFullscreen]=useState(false);
+const [forexMode]=useState(false);,[forexPair,setForexPair]=useState('FX:EURUSD'),[isFullscreen,setIsFullscreen]=useState(false);
  const chartFrame=useRef<HTMLDivElement>(null);
  const forexPairs=[['EUR/USD','FX:EURUSD'],['GBP/USD','FX:GBPUSD'],['USD/JPY','FX:USDJPY'],['AUD/USD','FX:AUDUSD'],['USD/CAD','FX:USDCAD'],['USD/CHF','FX:USDCHF'],['EUR/JPY','FX:EURJPY'],['XAU/USD','OANDA:XAUUSD']];
  async function toggleChartFullscreen(){const el=chartFrame.current;if(!el)return;try{if(!document.fullscreenElement)await el.requestFullscreen();else await document.exitFullscreen()}catch(e){setError('Plein écran indisponible dans ce navigateur.')} }
