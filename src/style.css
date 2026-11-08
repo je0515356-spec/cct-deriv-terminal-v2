@@ -104,3 +104,26 @@
 .chart-wrap:fullscreen .chart-fullscreen-controls{top:10px;right:12px}
 .chart-wrap:fullscreen .forex-frame{height:100vh}
 @media(max-width:650px){.forex-selector{gap:7px;padding:8px}.forex-selector small{flex-basis:100%}.chart-fullscreen-controls .btn{font-size:10px;padding:6px 8px}}
+
+
+/* CCT V8.8 — market switch, smoother chart transitions and fullscreen layout */
+.market-mode-switch{display:inline-flex;align-items:center;gap:3px;padding:3px;border:1px solid #304965;border-radius:8px;background:#0b1727}
+.market-mode-switch button{border:0;border-radius:6px;padding:6px 12px;background:transparent;color:#91a8c4;font-size:11px;font-weight:700;cursor:pointer;transition:background .18s ease,color .18s ease,transform .18s ease}
+.market-mode-switch button:hover{color:#eaf5ff;background:#1a3049}
+.market-mode-switch button.active{background:#164b61;color:#70e6e4;box-shadow:0 0 0 1px #2b8290 inset}
+.chart-wrap{overflow:hidden;isolation:isolate;transition:height .22s ease,min-height .22s ease,flex .22s ease}
+.chart-wrap:fullscreen{display:block;position:fixed;inset:0;width:100vw;height:100vh;min-height:100vh;z-index:9999}
+.chart-wrap:fullscreen .chart{position:absolute;inset:0;width:100%;height:100%}
+.chart-wrap:fullscreen .drawing-overlay{position:absolute;inset:0;width:100%;height:100%}
+.chart-wrap:fullscreen .forex-frame{position:absolute;inset:0;width:100%;height:100%}
+.chart-fullscreen-controls{transition:opacity .2s ease}
+.chart-fullscreen-controls:hover{opacity:1}
+.drawing-overlay.drawing-active{cursor:crosshair;touch-action:none;user-select:none;-webkit-user-select:none}
+.drawing-overlay .editable-drawing{pointer-events:visiblePainted}
+.drawing-overlay .rr-handle{pointer-events:all;touch-action:none}
+@media(max-width:650px){
+ .chart-tools{gap:7px;padding:0 8px;overflow-x:auto;white-space:nowrap}
+ .market-mode-switch button{padding:6px 9px}
+ .chart-wrap{min-height:300px}
+ .chart-wrap:fullscreen{min-height:100vh}
+}
