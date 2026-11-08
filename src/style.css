@@ -137,3 +137,21 @@
 .drawing-overlay.drawing-active>rect:first-child{pointer-events:all!important}
 .market-mode-switch{flex-shrink:0}
 @media(max-width:650px){.chart-wrap.cct-expanded{height:100dvh!important}.chart-fullscreen-controls .btn{min-height:40px}}
+
+/* CCT FINAL PATCH — commandes visibles et surface de dessin fiable */
+.chart-wrap{position:relative!important;isolation:isolate;min-height:320px}
+.chart-fullscreen-controls{position:absolute!important;display:flex!important;right:12px!important;top:10px!important;z-index:10020!important;opacity:1!important;pointer-events:auto!important}
+.chart-fullscreen-controls .cct-fullscreen-button{display:inline-flex!important;visibility:visible!important;min-height:34px;background:#123d55!important;border:1px solid #42c8d3!important;color:#f5fbff!important;font-weight:700!important;box-shadow:0 3px 14px #0008!important}
+.drawing-overlay{z-index:8!important}
+.drawing-overlay.drawing-active{pointer-events:auto!important;cursor:crosshair!important;touch-action:none!important}
+.drawing-overlay.drawing-active>rect:first-child{pointer-events:all!important;fill:transparent!important}
+.chart-wrap:fullscreen .chart-fullscreen-controls{position:fixed!important;top:12px!important;right:14px!important;z-index:100020!important}
+.chart-wrap:fullscreen{background:#0e1625!important}
+.chart-wrap.cct-expanded{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;min-height:100dvh!important;z-index:100000!important;background:#0e1625!important}
+.chart-wrap.cct-expanded .chart-fullscreen-controls{position:fixed!important;top:12px!important;right:14px!important;z-index:100020!important}
+.market-mode-switch{display:flex!important;gap:5px!important;align-items:center!important}
+.market-mode-switch button{border:1px solid #344a65!important;background:#14243a!important;color:#b9c9dc!important;border-radius:6px!important;padding:6px 10px!important;font-size:11px!important}
+.market-mode-switch button.active{background:#13516a!important;color:#8ff4ef!important;border-color:#35b8c8!important}
+.forex-selector{position:relative;z-index:4;display:flex!important;align-items:center;gap:12px;flex-wrap:wrap;padding:9px 14px;background:#102238;border-bottom:1px solid #2b435d;color:#dceafa;font-size:12px}
+.forex-frame{display:block!important;border:0!important;width:100%!important;height:100%!important;min-height:320px!important}
+@media(max-width:650px){.chart-fullscreen-controls .cct-fullscreen-button{min-height:42px!important;padding:8px 11px!important}.chart-wrap{min-height:280px}.market-mode-switch button{padding:6px 8px!important}}
