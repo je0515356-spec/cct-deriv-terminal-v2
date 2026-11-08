@@ -28,7 +28,7 @@ function App({onHome}:{onHome:()=>void}){
  const replayRef=useRef(false),replayIndexRef=useRef(0),replayCutoffRef=useRef<number|null>(null);
  const [authReady,setAuthReady]=useState(!supabase),[authEmail,setAuthEmail]=useState(''),[authMessage,setAuthMessage]=useState('');
  const [chartReady,setChartReady]=useState(false),[journalOpen,setJournalOpen]=useState(()=>window.location.hash==='#journal');
-
+const [forexMode] = useState(...);
  const [drawTool,setDrawTool]=useState<DrawTool>('cursor'),[drawings,setDrawings]=useState<Drawing[]>(()=>readDrawings(DEFAULT_SYMBOL,60)),[draft,setDraft]=useState<Drawing|null>(null),[drawingColor,setDrawingColor]=useState('#f6c65b'),[renderVersion,setRenderVersion]=useState(0);
  const [textInput,setTextInput]=useState('Analyse');
  const [selectedId,setSelectedId]=useState<string|null>(null),[dragging,setDragging]=useState(false),[now,setNow]=useState(Date.now());
