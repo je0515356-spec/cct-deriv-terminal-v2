@@ -1,0 +1,6 @@
+{
+  "name": "CCT — Crown Come Trader",
+  "description": "Terminal de trading professionnel pour analyse technique, backtesting en replay et journal de performance.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

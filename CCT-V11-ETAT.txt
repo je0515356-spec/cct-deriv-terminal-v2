@@ -1,0 +1,8 @@
+CCT V11 — patch vérifiable depuis le ZIP utilisateur
+
+Fait : intégration du logo officiel CCT dans la navigation, favicon et watermark 6% au-dessus du canvas et sous les dessins.
+Conservé : moteur Lightweight Charts, Deriv, journal, replay, outils de dessin existants.
+Non fait : tous les outils TradingView Premium, intégration et validation des paiements USDT, nouveaux flux de données, déploiement GitHub/Cloudflare.
+
+Déploiement : npm install puis npm run lint et npm run build; publier sur une branche Preview Cloudflare avant production.
+ATTENTION : ce projet contient dans public/ deux archives historiques cct-source-code.zip et cct-cloudflare-pages-deploy.zip. Vérifier avant publication; elles pourraient exposer du code source.
