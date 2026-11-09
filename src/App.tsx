@@ -25,7 +25,6 @@ import { usePWAInstall } from './hooks/usePWAInstall';
 export default function App() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('home');
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [isGuestMode, setIsGuestMode] = useState<boolean>(false);
 
   // Reviews state with persistence
   const [reviews, setReviews] = useState<PlatformReview[]>(() => {
@@ -61,7 +60,6 @@ export default function App() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         setCurrentUser(session.user);
-        setIsGuestMode(false);
       }
     });
 
@@ -70,7 +68,6 @@ export default function App() {
     } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
         setCurrentUser(session.user);
-        setIsGuestMode(false);
       } else {
         setCurrentUser(null);
       }
@@ -118,7 +115,7 @@ export default function App() {
     setActiveTab('journal');
   };
 
-  const hasAccess = Boolean(currentUser || isGuestMode);
+  const hasAccess = Boolean(currentUser);
 
   return (
     <div className="flex flex-col h-screen w-screen bg-[#070b14] text-slate-100 overflow-hidden font-sans">
@@ -151,7 +148,7 @@ export default function App() {
             <TradingChart onLogPositionInJournal={handleLogPositionInJournal} />
           ) : (
             <GoogleAuthGate
-              onGuestAccess={() => setIsGuestMode(true)}
+              onGuestAccess={() => {}}
               onNavigateHome={() => setActiveTab('home')}
               onOpenContactPro={() => setIsContactProModalOpen(true)}
               targetFeature="terminal"
@@ -164,7 +161,7 @@ export default function App() {
             <JournalView initialNewTrade={prefilledTrade} />
           ) : (
             <GoogleAuthGate
-              onGuestAccess={() => setIsGuestMode(true)}
+              onGuestAccess={() => {}}
               onNavigateHome={() => setActiveTab('home')}
               onOpenContactPro={() => setIsContactProModalOpen(true)}
               targetFeature="journal"
