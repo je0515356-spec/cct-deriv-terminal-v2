@@ -27,14 +27,15 @@ import {
 interface JournalViewProps {
   onOpenTradeModal?: () => void;
   initialNewTrade?: Partial<JournalTrade> | null;
+  userId: string;
 }
 
 const DEFAULT_INITIAL_ACCOUNT: JournalAccount = {
   id: 'acc_main',
   name: 'Compte Principal CCT',
   currency: 'USD',
-  initialBalance: 10000,
-  currentBalance: 10000,
+  initialBalance: 0,
+  currentBalance: 0,
   deposits: 0,
   withdrawals: 0,
   createdAt: Date.now(),
@@ -123,16 +124,16 @@ const DEFAULT_SAMPLE_TRADES: JournalTrade[] = [
   },
 ];
 
-export const JournalView: React.FC<JournalViewProps> = ({ initialNewTrade }) => {
+export const JournalView: React.FC<JournalViewProps> = ({ initialNewTrade, userId }) => {
   // Load stored account and trades from localStorage
   const [account, setAccount] = useState<JournalAccount>(() => {
-    const saved = localStorage.getItem('cct_journal_account');
+    const saved = localStorage.getItem(`cct_test_journal_account_${userId}`);
     return saved ? JSON.parse(saved) : DEFAULT_INITIAL_ACCOUNT;
   });
 
   const [trades, setTrades] = useState<JournalTrade[]>(() => {
-    const saved = localStorage.getItem('cct_journal_trades');
-    return saved ? JSON.parse(saved) : DEFAULT_SAMPLE_TRADES;
+    const saved = localStorage.getItem(`cct_test_journal_trades_${userId}`);
+    return saved ? JSON.parse(saved) : [];
   });
 
   // Modals state
@@ -160,12 +161,12 @@ export const JournalView: React.FC<JournalViewProps> = ({ initialNewTrade }) => 
 
   // Persist account and trades
   useEffect(() => {
-    localStorage.setItem('cct_journal_account', JSON.stringify(account));
-  }, [account]);
+    localStorage.setItem(`cct_test_journal_account_${userId}`, JSON.stringify(account));
+  }, [account, userId]);
 
   useEffect(() => {
-    localStorage.setItem('cct_journal_trades', JSON.stringify(trades));
-  }, [trades]);
+    localStorage.setItem(`cct_test_journal_trades_${userId}`, JSON.stringify(trades));
+  }, [trades, userId]);
 
   // Stats Computation
   const stats: JournalStats = useMemo(() => {
