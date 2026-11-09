@@ -375,7 +375,7 @@ export const TradingChart: React.FC<TradingChartProps> = ({ onLogPositionInJourn
       visible: false,
     });
 
-    // 4. Populate immediate initial candles right after creation!
+    // No fake initial candles: display actual feed when available.
     // Wait for verified historical candles from Deriv; never fabricate prices.
     setIsChartReady(true);
 
@@ -477,7 +477,7 @@ export const TradingChart: React.FC<TradingChartProps> = ({ onLogPositionInJourn
   useEffect(() => {
     const feedSymbol = activeMarket.feedSymbol;
 
-    // 1. ZERO-LATENCY DISPLAY: Immediately load candles for the selected pair so the chart NEVER goes blank!
+    // Clear stale data: real historical candles must arrive from Deriv.
     // Clear stale market data while requesting the selected symbol/timeframe.
     candlesRef.current = [];
     setCandles([]);
@@ -563,7 +563,7 @@ export const TradingChart: React.FC<TradingChartProps> = ({ onLogPositionInJourn
       unsubHistory();
       unsubTick();
     };
-  }, [symbol, granularity, activeMarket, applyCandlesToChart, isReplayActive]);
+  }, [symbol, granularity, activeMarket, applyCandlesToChart]);
 
   // Replay Mode Candle Slicing & Playback
   useEffect(() => {
