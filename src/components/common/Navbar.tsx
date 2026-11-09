@@ -114,11 +114,11 @@ export const Navbar: React.FC<NavbarProps> = ({
         <button
           onClick={onOpenContactProModal}
           className="px-2.5 sm:px-3 py-1.5 bg-gradient-to-r from-cyan-500/15 via-blue-500/15 to-emerald-500/15 hover:from-cyan-500/25 hover:to-emerald-500/25 text-cyan-200 hover:text-white border border-cyan-500/40 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm shadow-cyan-500/10 cursor-pointer active:scale-95 whitespace-nowrap"
-          title="Contact Eric Rak (loza.nama.376) • WhatsApp 038 28 171 00"
+          title="Assistance WhatsApp"
         >
           <Users className="w-3.5 h-3.5 text-cyan-400" />
-          <span className="hidden lg:inline">Contact Eric Rak</span>
-          <span className="lg:hidden hidden sm:inline">Eric Rak</span>
+          <span className="hidden lg:inline">Assistance</span>
+          <span className="lg:hidden hidden sm:inline">Contact</span>
           <span className="flex items-center gap-1 text-[10px] text-emerald-400 bg-emerald-950/70 px-1 py-0.2 rounded border border-emerald-500/30">
             <MessageCircle className="w-2.5 h-2.5" />
             <span className="hidden xl:inline">038 28 171 00</span>
