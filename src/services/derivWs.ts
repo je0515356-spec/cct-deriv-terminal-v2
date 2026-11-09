@@ -25,7 +25,7 @@ export type TickCallback = (candle: CandleData, symbol: string, generationId: nu
 
 class DerivWebSocketService {
   private ws: WebSocket | null = null;
-  private url = 'wss://ws.derivws.com/websockets/v3?app_id=1089';
+  private url = 'wss://api.derivws.com/trading/v1/options/ws/public';
   private currentGenerationId = 0;
   private currentSymbol = 'R_100'; // Default Volatility 100
   private currentGranularity = 60; // Default 1m
@@ -188,6 +188,18 @@ class DerivWebSocketService {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       this.sendHistoryRequest(symbol, granularity, generationId);
     } else {
+      this.connect();
+    }
+  }
+
+  public retryCurrentMarket() {
+    this.reconnectAttempts = 0;
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      this.changeSymbol(this.currentSymbol, this.currentGranularity);
+    } else {
+      clearTimeout(this.reconnectTimer);
+      if (this.ws) { try { this.ws.close(); } catch {} }
+      this.ws = null;
       this.connect();
     }
   }
