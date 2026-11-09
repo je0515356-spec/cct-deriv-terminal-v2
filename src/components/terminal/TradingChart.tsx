@@ -13,7 +13,6 @@ import { TIMEFRAMES, CandleData, ConnectionStatus } from '../../types/market';
 import { Drawing, DrawingToolType, PositionDrawing } from '../../types/drawing';
 import { derivWs } from '../../services/derivWs';
 import { getMarketBySymbol } from '../../services/marketData';
-import { generateRealisticHistoricalCandles } from '../../services/marketSimFallback';
 import { loadDrawingsForSymbol, saveDrawingsForSymbol } from '../../services/supabaseClient';
 import { calculateSMA, calculateEMA, calculateBollingerBands, calculateRSI } from '../../utils/indicators';
 import { DrawingToolbar } from './DrawingToolbar';
@@ -377,8 +376,7 @@ export const TradingChart: React.FC<TradingChartProps> = ({ onLogPositionInJourn
     });
 
     // 4. Populate immediate initial candles right after creation!
-    const initialCandles = generateRealisticHistoricalCandles(symbol, granularity, 250);
-    applyCandlesToChart(initialCandles);
+    // Wait for verified historical candles from Deriv; never fabricate prices.
     setIsChartReady(true);
 
     // Crosshair move listener for OHLC legend
@@ -480,8 +478,10 @@ export const TradingChart: React.FC<TradingChartProps> = ({ onLogPositionInJourn
     const feedSymbol = activeMarket.feedSymbol;
 
     // 1. ZERO-LATENCY DISPLAY: Immediately load candles for the selected pair so the chart NEVER goes blank!
-    const instantCandles = generateRealisticHistoricalCandles(symbol, granularity, 250);
-    applyCandlesToChart(instantCandles);
+    // Clear stale market data while requesting the selected symbol/timeframe.
+    candlesRef.current = [];
+    setCandles([]);
+    candleSeriesRef.current?.setData([]);
 
     setConnectionStatus('LOADING');
     setStatusMessage(`Connexion à ${activeMarket.displayName}...`);
@@ -563,7 +563,7 @@ export const TradingChart: React.FC<TradingChartProps> = ({ onLogPositionInJourn
       unsubHistory();
       unsubTick();
     };
-  }, [symbol, granularity, activeMarket, applyCandlesToChart]);
+  }, [symbol, granularity, activeMarket, applyCandlesToChart, isReplayActive]);
 
   // Replay Mode Candle Slicing & Playback
   useEffect(() => {
@@ -673,9 +673,9 @@ export const TradingChart: React.FC<TradingChartProps> = ({ onLogPositionInJourn
       }`}
     >
       {/* Top Header Controls Bar */}
-      <div className="h-12 bg-[#090e1a] border-b border-slate-800 px-3 flex items-center justify-between gap-2 shrink-0 z-20">
+      <div className="min-h-12 bg-[#090e1a] border-b border-slate-800 px-2 sm:px-3 flex flex-wrap items-center gap-2 shrink-0 z-20 py-1">
         {/* Left Section: Market Selector, Quick Pills & Timeframes */}
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
+        <div className="flex min-w-0 flex-1 items-center gap-2 overflow-x-auto py-1">
           <MarketSelector
             currentSymbol={symbol}
             onSelectSymbol={(newSym) => {
@@ -743,7 +743,7 @@ export const TradingChart: React.FC<TradingChartProps> = ({ onLogPositionInJourn
         </div>
 
         {/* Right Section: Watchlist, Replay, Snapshot, Fullscreen */}
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2 shrink-0 max-w-full overflow-x-auto py-1">
           {/* Watchlist Toggle */}
           <button
             onClick={() => setIsWatchlistOpen(!isWatchlistOpen)}
