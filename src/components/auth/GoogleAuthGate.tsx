@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Crown, User } from 'lucide-react';
+import { Crown } from 'lucide-react';
 import { signInWithGoogle } from '../../services/supabaseClient';
 
 interface GoogleAuthGateProps {
@@ -33,17 +33,13 @@ export const GoogleAuthGate: React.FC<GoogleAuthGateProps> = ({
         <div className="mt-5 rounded-xl border border-slate-700 bg-slate-900/70 p-4">
           <p className="text-sm font-semibold text-cyan-300">Offre de lancement</p>
           <p className="mt-1 text-2xl font-black text-white">2 USD <span className="text-sm font-normal text-slate-400">/ 30 jours</span></p>
-          <p className="mt-1 text-xs text-slate-300">7 jours d’essai gratuit prévus à l’inscription</p>
+          <p className="mt-1 text-xs text-slate-300">7 jours d’essai gratuit — activation en préparation</p>
         </div>
         {error && <p className="mt-3 text-xs text-rose-300">{error}</p>}
         <button onClick={login} disabled={loading} className="mt-5 w-full rounded-xl bg-white px-4 py-3 text-sm font-bold text-slate-900 disabled:opacity-50">
           {loading ? 'Connexion en cours…' : 'Continuer avec Google'}
         </button>
-        <button onClick={onGuestAccess} className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl border border-slate-600 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800">
-          <User className="h-4 w-4" /> Tester le graphique sans compte
-        </button>
-        <p className="mt-5 text-xs text-slate-400">Contact : WhatsApp 038 28 171 00</p>
-        <p className="mt-1 text-xs text-slate-400">Facebook : Eric Rak</p>
+        <p className="mt-5 text-xs text-slate-400">Assistance : WhatsApp 038 28 171 00</p>
       </div>
     </div>
   );
