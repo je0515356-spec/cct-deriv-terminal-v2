@@ -33,8 +33,8 @@ const DEFAULT_INITIAL_ACCOUNT: JournalAccount = {
   id: 'acc_main',
   name: 'Compte Principal CCT',
   currency: 'USD',
-  initialBalance: 10000,
-  currentBalance: 10000,
+  initialBalance: 0,
+  currentBalance: 0,
   deposits: 0,
   withdrawals: 0,
   createdAt: Date.now(),
@@ -132,7 +132,7 @@ export const JournalView: React.FC<JournalViewProps> = ({ initialNewTrade }) => 
 
   const [trades, setTrades] = useState<JournalTrade[]>(() => {
     const saved = localStorage.getItem('cct_journal_trades');
-    return saved ? JSON.parse(saved) : DEFAULT_SAMPLE_TRADES;
+    return saved ? JSON.parse(saved) : [];
   });
 
   // Modals state
