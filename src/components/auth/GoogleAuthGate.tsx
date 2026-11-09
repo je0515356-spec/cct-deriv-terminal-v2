@@ -3,14 +3,12 @@ import { Crown } from 'lucide-react';
 import { signInWithGoogle } from '../../services/supabaseClient';
 
 interface GoogleAuthGateProps {
-  onGuestAccess: () => void;
   onNavigateHome: () => void;
   onOpenContactPro?: () => void;
   targetFeature?: 'terminal' | 'journal';
 }
 
 export const GoogleAuthGate: React.FC<GoogleAuthGateProps> = ({
-  onGuestAccess,
 }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -31,9 +29,9 @@ export const GoogleAuthGate: React.FC<GoogleAuthGateProps> = ({
         <h1 className="text-xl font-black text-white">CCT — Crown Come Trader</h1>
         <p className="mt-2 text-sm text-slate-300">Terminal de trading et backtesting</p>
         <div className="mt-5 rounded-xl border border-slate-700 bg-slate-900/70 p-4">
-          <p className="text-sm font-semibold text-cyan-300">Offre de lancement</p>
-          <p className="mt-1 text-2xl font-black text-white">2 USD <span className="text-sm font-normal text-slate-400">/ 30 jours</span></p>
-          <p className="mt-1 text-xs text-slate-300">7 jours d’essai gratuit — activation en préparation</p>
+          <p className="text-sm font-semibold text-cyan-300">Accès de test</p>
+          <p className="mt-1 text-2xl font-black text-white">0 USD <span className="text-sm font-normal text-slate-400">/ test</span></p>
+          <p className="mt-1 text-xs text-slate-300">Version TEST gratuite — aucun paiement</p>
         </div>
         {error && <p className="mt-3 text-xs text-rose-300">{error}</p>}
         <button onClick={login} disabled={loading} className="mt-5 w-full rounded-xl bg-white px-4 py-3 text-sm font-bold text-slate-900 disabled:opacity-50">
