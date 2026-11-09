@@ -99,7 +99,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               </div>
 
               <div className="pt-2 border-t border-slate-800 text-[11px] text-slate-400">
-                Vos tracés graphiques et votre Journal PRO sont synchronisés avec votre compte.
+                Version test : votre journal est enregistré localement sur cet appareil, séparément par compte Google. La synchronisation cloud du journal reste à développer.
               </div>
 
               <button
