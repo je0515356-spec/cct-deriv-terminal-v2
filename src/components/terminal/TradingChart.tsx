@@ -65,8 +65,6 @@ export const TradingChart: React.FC<TradingChartProps> = ({ onLogPositionInJourn
   const historyCacheRef = useRef<Map<string, CandleData[]>>(new Map());
   const replayActiveRef = useRef(false);
   candlesRef.current = candles;
-  replayActiveRef.current = isReplayActive;
-  replayIndexRef.current = replayIndex;
 
   // Crosshair hover OHLC
   const [hoverOhlc, setHoverOhlc] = useState<CandleData | null>(null);
@@ -92,6 +90,7 @@ export const TradingChart: React.FC<TradingChartProps> = ({ onLogPositionInJourn
   const [isReplayPlaying, setIsReplayPlaying] = useState(false);
   const [replaySpeed, setReplaySpeed] = useState(1);
   const [isPickingReplayStart, setIsPickingReplayStart] = useState(false);
+  replayActiveRef.current = isReplayActive;
   const replayIntervalRef = useRef<any>(null);
 
   // Indicators modal state
