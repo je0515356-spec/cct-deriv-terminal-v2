@@ -62,7 +62,11 @@ export const TradingChart: React.FC<TradingChartProps> = ({ onLogPositionInJourn
   // Candle data storage
   const [candles, setCandles] = useState<CandleData[]>([]);
   const candlesRef = useRef<CandleData[]>([]);
+  const historyCacheRef = useRef<Map<string, CandleData[]>>(new Map());
+  const replayActiveRef = useRef(false);
   candlesRef.current = candles;
+  replayActiveRef.current = isReplayActive;
+  replayIndexRef.current = replayIndex;
 
   // Crosshair hover OHLC
   const [hoverOhlc, setHoverOhlc] = useState<CandleData | null>(null);
@@ -195,7 +199,7 @@ export const TradingChart: React.FC<TradingChartProps> = ({ onLogPositionInJourn
         high: h,
         low: l,
         close: cl,
-        volume: c.volume || Math.floor(Math.random() * 300) + 30,
+        volume: c.volume ?? 0,
       });
     }
 
@@ -212,7 +216,7 @@ export const TradingChart: React.FC<TradingChartProps> = ({ onLogPositionInJourn
 
     candlesRef.current = uniqueCandles;
     setCandles(uniqueCandles);
-    setReplayIndex(Math.max(20, Math.floor(uniqueCandles.length * 0.7)));
+    setReplayIndex(Math.min(uniqueCandles.length - 1, Math.max(20, Math.floor(uniqueCandles.length * 0.7))));
 
     if (!candleSeriesRef.current || !chartInstanceRef.current) return;
 
@@ -230,7 +234,7 @@ export const TradingChart: React.FC<TradingChartProps> = ({ onLogPositionInJourn
       if (volumeSeriesRef.current) {
         const volData = uniqueCandles.map((c) => ({
           time: c.time as UTCTimestamp,
-          value: c.volume || Math.floor(c.close * 10),
+          value: c.volume ?? 0,
           color: c.close >= c.open ? 'rgba(16, 185, 129, 0.35)' : 'rgba(244, 63, 94, 0.35)',
         }));
         volumeSeriesRef.current.setData(volData);
@@ -479,9 +483,17 @@ export const TradingChart: React.FC<TradingChartProps> = ({ onLogPositionInJourn
 
     // Clear stale data: real historical candles must arrive from Deriv.
     // Clear stale market data while requesting the selected symbol/timeframe.
-    candlesRef.current = [];
-    setCandles([]);
-    candleSeriesRef.current?.setData([]);
+    const cacheKey = `${feedSymbol}:${granularity}`;
+    const cached = historyCacheRef.current.get(cacheKey);
+    if (cached?.length) {
+      applyCandlesToChart(cached);
+    } else {
+      candlesRef.current = [];
+      setCandles([]);
+      candleSeriesRef.current?.setData([]);
+      volumeSeriesRef.current?.setData([]);
+    }
+    setIsReplayPlaying(false);
 
     setConnectionStatus('LOADING');
     setStatusMessage(`Connexion à ${activeMarket.displayName}...`);
@@ -497,6 +509,7 @@ export const TradingChart: React.FC<TradingChartProps> = ({ onLogPositionInJourn
       if (incomingSymbol !== feedSymbol && incomingSymbol !== symbol) return;
 
       if (newCandles && newCandles.length > 0) {
+        historyCacheRef.current.set(cacheKey, newCandles);
         applyCandlesToChart(newCandles);
         setConnectionStatus('LIVE');
       }
@@ -504,7 +517,7 @@ export const TradingChart: React.FC<TradingChartProps> = ({ onLogPositionInJourn
 
     // Listen to real-time tick updates
     const unsubTick = derivWs.onTick((tick, incomingSymbol) => {
-      if ((incomingSymbol !== feedSymbol && incomingSymbol !== symbol) || isReplayActive) return;
+      if ((incomingSymbol !== feedSymbol && incomingSymbol !== symbol) || replayActiveRef.current) return;
 
       const currentList = candlesRef.current;
       if (currentList.length === 0) return;
