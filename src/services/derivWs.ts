@@ -1,5 +1,4 @@
 import { CandleData, ConnectionStatus, MarketSymbol } from '../types/market';
-import { generateRealisticHistoricalCandles } from './marketSimFallback';
 
 export interface DerivCandleRaw {
   epoch: number;
@@ -244,9 +243,7 @@ class DerivWebSocketService {
       const reqId = data.req_id;
       // If error is for current generation or symbol
       if (reqId === undefined || reqId === this.currentGenerationId) {
-        this.setStatus('LIVE', `Flux actif sur ${this.currentSymbol}`);
-        const fallback = generateRealisticHistoricalCandles(this.currentSymbol, this.currentGranularity, 250);
-        this.historyCallbacks.forEach((cb) => cb(fallback, this.currentSymbol, this.currentGenerationId));
+        this.setStatus('ERROR', data.error?.message || 'Données Deriv indisponibles');
       }
       return;
     }
@@ -290,13 +287,13 @@ class DerivWebSocketService {
           high,
           low,
           close,
-          volume: Math.floor(Math.random() * 200) + 20,
+          volume: 0,
         });
       }
 
-      // If empty response (e.g. Forex closed on weekend), provide high-fidelity historical candles
       if (candles.length === 0) {
-        candles = generateRealisticHistoricalCandles(this.currentSymbol, this.currentGranularity, 250);
+        this.setStatus('ERROR', 'Aucune bougie réelle disponible pour ce marché');
+        return;
       }
 
       this.setStatus('LIVE', `Flux actif sur ${this.currentSymbol}`);
