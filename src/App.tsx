@@ -25,6 +25,7 @@ import { usePWAInstall } from './hooks/usePWAInstall';
 export default function App() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('home');
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [authReady, setAuthReady] = useState(false);
 
   // Reviews state with persistence
   const [reviews, setReviews] = useState<PlatformReview[]>(() => {
@@ -55,13 +56,12 @@ export default function App() {
   // Listen to Supabase session state
   useEffect(() => {
     const supabase = getSupabase();
-    if (!supabase) return;
+    if (!supabase) { setAuthReady(true); return; }
 
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        setCurrentUser(session.user);
-      }
-    });
+      setCurrentUser(session?.user ?? null);
+      setAuthReady(true);
+    }).catch(() => setAuthReady(true));
 
     const {
       data: { subscription },
@@ -116,9 +116,11 @@ export default function App() {
   };
 
   const hasAccess = Boolean(currentUser);
+  const isFreeTest = true;
 
   return (
     <div className="flex flex-col h-screen w-screen bg-[#070b14] text-slate-100 overflow-hidden font-sans">
+      <div className="bg-emerald-900/80 text-emerald-100 text-center text-xs py-1 font-bold">CCT TEST GRATUIT — aucun paiement demandé — données de test</div>
       {/* Top Commercial Navigation */}
       <Navbar
         activeTab={activeTab}
@@ -144,7 +146,7 @@ export default function App() {
         )}
 
         {activeTab === 'terminal' && (
-          hasAccess ? (
+          !authReady ? (<div className="m-auto text-slate-300">Vérification de la connexion Google…</div>) : hasAccess ? (
             <TradingChart onLogPositionInJournal={handleLogPositionInJournal} />
           ) : (
             <GoogleAuthGate
@@ -158,7 +160,7 @@ export default function App() {
 
         {activeTab === 'journal' && (
           hasAccess ? (
-            <JournalView initialNewTrade={prefilledTrade} />
+            <JournalView key={currentUser!.id} userId={currentUser!.id} initialNewTrade={prefilledTrade} />
           ) : (
             <GoogleAuthGate
               onGuestAccess={() => {}}
