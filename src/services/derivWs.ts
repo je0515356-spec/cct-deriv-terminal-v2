@@ -25,7 +25,7 @@ export type TickCallback = (candle: CandleData, symbol: string, generationId: nu
 
 class DerivWebSocketService {
   private ws: WebSocket | null = null;
-  private url = 'wss://api.derivws.com/trading/v1/options/ws/public?app_id=1089';
+  private url = 'wss://ws.derivws.com/websockets/v3?app_id=1089';
   private currentGenerationId = 0;
   private currentSymbol = 'R_100'; // Default Volatility 100
   private currentGranularity = 60; // Default 1m
@@ -170,7 +170,7 @@ class DerivWebSocketService {
   /**
    * CRITICAL ZERO-REFRESH PAIR SWITCHING
    * Increments generationId so old responses are ignored.
-   * Cleans up subscription, updates currentSymbol, immediately dispatches fallback candles,
+   * Cleans up subscription and updates currentSymbol,
    * then requests real Deriv stream.
    */
   public changeSymbol(symbol: string, granularity: number = this.currentGranularity) {
@@ -242,7 +242,7 @@ class DerivWebSocketService {
     if (data.error) {
       const reqId = data.req_id;
       // If error is for current generation or symbol
-      if (reqId === undefined || reqId === this.currentGenerationId) {
+      if (reqId === this.currentGenerationId || (reqId === undefined && data.echo_req?.ticks_history === this.currentSymbol)) {
         this.setStatus('ERROR', data.error?.message || 'Données Deriv indisponibles');
       }
       return;
