@@ -10,8 +10,6 @@ import { Navbar, ActiveTab } from './components/common/Navbar';
 import { HomeView } from './components/home/HomeView';
 import { TradingChart } from './components/terminal/TradingChart';
 import { JournalView } from './components/journal/JournalView';
-import { AuthModal } from './components/auth/AuthModal';
-import { GoogleAuthGate } from './components/auth/GoogleAuthGate';
 import { PositionDrawing } from './types/drawing';
 import { JournalTrade } from './types/journal';
 import { ContactProModal } from './components/common/ContactProModal';
@@ -41,7 +39,6 @@ export default function App() {
   };
 
   // Modals state
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isContactProModalOpen, setIsContactProModalOpen] = useState(false);
   const [isReviewsModalOpen, setIsReviewsModalOpen] = useState(false);
   const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
@@ -115,7 +112,6 @@ export default function App() {
     setActiveTab('journal');
   };
 
-  const hasAccess = Boolean(currentUser);
 
   return (
     <div className="flex flex-col h-screen w-screen bg-[#070b14] text-slate-100 overflow-hidden font-sans">
@@ -123,11 +119,9 @@ export default function App() {
       <Navbar
         activeTab={activeTab}
         onSelectTab={setActiveTab}
-        onOpenAuthModal={() => setIsAuthModalOpen(true)}
         onOpenContactProModal={() => setIsContactProModalOpen(true)}
         onOpenReviewsModal={() => setIsReviewsModalOpen(true)}
         onOpenInstallModal={() => setIsInstallModalOpen(true)}
-        currentUser={currentUser}
       />
 
       {/* Main Content Area */}
@@ -144,39 +138,13 @@ export default function App() {
         )}
 
         {activeTab === 'terminal' && (
-          hasAccess ? (
-            <TradingChart onLogPositionInJournal={handleLogPositionInJournal} />
-          ) : (
-            <GoogleAuthGate
-              onGuestAccess={() => {}}
-              onNavigateHome={() => setActiveTab('home')}
-              onOpenContactPro={() => setIsContactProModalOpen(true)}
-              targetFeature="terminal"
-            />
-          )
+          <TradingChart onLogPositionInJournal={handleLogPositionInJournal} />
         )}
 
         {activeTab === 'journal' && (
-          hasAccess ? (
-            <JournalView initialNewTrade={prefilledTrade} />
-          ) : (
-            <GoogleAuthGate
-              onGuestAccess={() => {}}
-              onNavigateHome={() => setActiveTab('home')}
-              onOpenContactPro={() => setIsContactProModalOpen(true)}
-              targetFeature="journal"
-            />
-          )
+          <JournalView initialNewTrade={prefilledTrade} />
         )}
       </main>
-
-      {/* Auth & Google Member Modal */}
-      <AuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-        currentUser={currentUser}
-        onUserChange={setCurrentUser}
-      />
 
       {/* Contact Eric Rak Modal */}
       <ContactProModal
